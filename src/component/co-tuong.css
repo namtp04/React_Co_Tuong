@@ -202,3 +202,37 @@ body {
 .board {
   border: 1px solid rgba(0, 0, 0, 0.3); /* Đường viền mềm mại hơn cho bàn cờ */
 }
+
+
+.chieu-tuong {
+  position: absolute;
+  top: 40%; /* Điều chỉnh vị trí theo nhu cầu */
+  left: 0; /* Bắt đầu từ bên trái */
+  font-size: 48px; /* Kích thước chữ */
+  font-weight: 900;
+  color: brown; /* Màu chữ */
+  text-align: center; /* Căn giữa chữ */
+  font-family: 'ZCOOL KuaiLe', sans-serif; /* Font chữ Trung Hoa */
+  white-space: nowrap; /* Ngăn ngừa xuống dòng */
+  animation: slideInOut 6s forwards; /* Thời gian tổng cho hiệu ứng */
+  width: 100%;
+  z-index: 100; /* Đảm bảo chữ nằm trên các phần tử khác */
+}
+
+@keyframes slideInOut {
+  0% {
+    transform: translateX(-100%); /* Bắt đầu từ ngoài màn hình bên trái */
+  }
+  25% {
+    transform: translateX(0); /* Chạy vào giữa màn hình */
+  }
+  50% {
+    transform: translateX(0); /* Dừng lại ở giữa */
+  }
+  75% {
+    transform: translateX(100%); /* Chạy ra ngoài bên phải */
+  }
+  100% {
+    transform: translateX(100%); /* Hoàn thành ra ngoài bên phải */
+  }
+}
