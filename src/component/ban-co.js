@@ -238,83 +238,40 @@ const Chessboard = () => {
     return moves; // Trả về các nước đi hợp lệ
   };
 
-  const isCheckmate = (color, updatedPieces) => {
+  // Hàm kiểm tra xem tướng có bị chiếu hay không
+  const isGeneralInCheck = (color, updatedPieces) => {
+    // Tìm vị trí của tướng
     const generalPiece = updatedPieces.find(
       (piece) =>
         piece.color === color && (piece.type === "将" || piece.type === "帥")
     );
 
     if (!generalPiece) {
-      console.error("General piece not found for color:", color);
-      return true; // This can return true for checkmate since there’s no general
+      console.error("Không tìm thấy tướng cho màu:", color);
+      return false;
     }
 
-    // 2. Check valid moves for the general
-    const validMoves = calculateValidMoves(generalPiece, updatedPieces);
+    const generalPosition = generalPiece.position;
 
-    // If the general has valid moves, it is not checkmate
-    if (validMoves.length > 0) {
-      return false; // Not checkmate
-    }
-
-    // Kiểm tra các quân cờ khác xem có thể chặn chiếu không
+    // Tính toán tất cả các nước đi của quân đối thủ
     const enemyColor = color === "red" ? "black" : "red";
     for (const piece of updatedPieces) {
-      if (piece.color === color) {
-        const moves = calculateValidMoves(piece, updatedPieces);
-        for (const move of moves) {
-          // Kiểm tra xem quân có thể di chuyển để chặn chiếu không
-          const newPieces = updatedPieces.map((p) =>
-            p === piece ? { ...p, position: move } : p
-          );
-          if (!isGeneralInCheck(color, newPieces)) {
-            return false; // Có quân có thể chặn chiếu
-          }
-
-          // Kiểm tra xem quân địch có thể bị bắt không
-          const targetPiece = updatedPieces.find(
-            (p) =>
-              p.position[0] === move[0] &&
-              p.position[1] === move[1] &&
-              p.color === enemyColor
-          );
-          if (targetPiece) {
-            const newUpdatedPieces = updatedPieces.filter(
-              (p) => p !== targetPiece
-            );
-            if (!isGeneralInCheck(color, newUpdatedPieces)) {
-              return false; // Có thể bắt quân địch và tránh chiếu
-            }
-          }
-        }
-      }
-    }
-
-    // Kiểm tra xem có quân địch nào có thể bị bắt không
-    for (const piece of updatedPieces) {
       if (piece.color === enemyColor) {
-        const moves = calculateValidMoves(piece, updatedPieces);
-        for (const move of moves) {
-          // Kiểm tra xem có quân địch nào có thể bị bắt
-          const targetPiece = updatedPieces.find(
-            (p) =>
-              p.position[0] === move[0] &&
-              p.position[1] === move[1] &&
-              p.color === enemyColor
-          );
-          if (targetPiece) {
-            const newUpdatedPieces = updatedPieces.filter(
-              (p) => p !== targetPiece
-            );
-            if (!isGeneralInCheck(color, newUpdatedPieces)) {
-              return false; // Nếu có quân nào có thể bị bắt và không chiếu, không chiếu bí
-            }
-          }
+        const enemyMoves = calculateValidMoves(piece, updatedPieces);
+
+        // Kiểm tra xem có nước đi nào của đối thủ tới vị trí của tướng không
+        if (
+          enemyMoves.some(
+            (move) =>
+              move[0] === generalPosition[0] && move[1] === generalPosition[1]
+          )
+        ) {
+          return true;
         }
       }
     }
 
-    return true; // Không còn cách nào để thoát khỏi chiếu
+    return false;
   };
 
   // Cập nhật hàm handleMovePiece
@@ -327,7 +284,7 @@ const Chessboard = () => {
     ) {
       let updatedPieces = [...pieces];
 
-      // Check for capturing the enemy piece
+      // Kiểm tra bắt quân địch
       const targetPiece = pieces.find(
         (piece) =>
           piece.position[0] === newPosition[0] &&
@@ -338,40 +295,40 @@ const Chessboard = () => {
         updatedPieces = updatedPieces.filter((piece) => piece !== targetPiece);
       }
 
-      // Move the selected piece
+      // Di chuyển quân cờ đã chọn
       updatedPieces = updatedPieces.map((piece) =>
         piece === selectedPiece ? { ...piece, position: newPosition } : piece
       );
 
-      // Check if the move puts the player's general in check
+      // Kiểm tra xem nước đi có làm cho tướng của người chơi bị chiếu không
       if (isGeneralInCheck(selectedPiece.color, updatedPieces)) {
-        return; // Prevent the move if it puts the general in check
+        return;
       }
 
-      // Update the pieces on the board
+      // Cập nhật quân cờ trên bàn cờ
       setPieces(updatedPieces);
       setSelectedPiece(null);
       setValidMoves([]);
+      console.log(selectedPiece);
 
-      // After the move, check if the opponent's general is in check
+      // Sau khi di chuyển, kiểm tra xem tướng của đối thủ có bị chiếu không
       const opponentColor = selectedPiece.color === "red" ? "black" : "red";
       if (isGeneralInCheck(opponentColor, updatedPieces)) {
-        showCheckMessageEffect(); // Show check message
-
-        // Check for checkmate
         if (isCheckmate(opponentColor, updatedPieces)) {
           Swal.fire({
             title: "Chiếu bí!",
-            text: (turn == "red" ? "Đỏ" : "Đen") + " thắng",
+            text: `${turn === "red" ? "Đỏ" : "Đen"} thắng!`,
             icon: "success",
           });
           setTurn(null);
           setTimeout(handleReset, 20000);
           return;
         }
+
+        showCheckMessageEffect();
       }
 
-      // Switch turns
+      // Chuyển lượt
       setTurn(turn === "red" ? "black" : "red");
     } else {
       setSelectedPiece(null);
@@ -379,25 +336,75 @@ const Chessboard = () => {
     }
   };
 
-  // Xử lý khi chọn quân cờ
+  const isCheckmate = (color, updatedPieces) => {
+    // Tìm quân tướng của bên đang bị chiếu
+    const generalPiece = updatedPieces.find(
+      (piece) =>
+        piece.color === color && (piece.type === "将" || piece.type === "帥")
+    );
+
+    if (!generalPiece) {
+      console.error("General piece not found for color:", color);
+      return false;
+    }
+
+    // Kiểm tra xem tướng có đang bị chiếu không
+    if (!isGeneralInCheck(color, updatedPieces)) {
+      return false;
+    }
+
+    // Kiểm tra nếu tướng có thể di chuyển thoát chiếu
+    const generalMoves = calculateValidMoves(generalPiece, updatedPieces);
+    for (const move of generalMoves) {
+      const newBoardState = updatedPieces.map((p) =>
+        p.type === generalPiece.type ? { ...p, position: move } : p
+      );
+      if (!isGeneralInCheck(color, newBoardState)) {
+        console.log("Tướng không bị chiếu tại trạng thái này:", newBoardState);
+        return false;
+      }
+    }
+
+    // Kiểm tra nếu có quân khác có thể cứu tướng
+    const piecesUnderThreat = updatedPieces.filter(
+      (piece) => piece.color === color
+    );
+
+    for (const piece of piecesUnderThreat) {
+      const validMoves = calculateValidMoves(piece, updatedPieces);
+      for (const move of validMoves) {
+        const newBoardState = updatedPieces.map((p) =>
+          p.type === piece.type ? { ...p, position: move } : p
+        );
+
+        // Nếu có quân cờ khác có thể cứu thoát tướng, không phải chiếu bí
+        if (!isGeneralInCheck(color, newBoardState)) {
+          console.log(
+            "Tướng không bị chiếu tại trạng thái này:",
+            newBoardState
+          );
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
   const handleSelectPiece = (piece) => {
     if (piece.color !== turn) {
-      // Nếu chọn quân cờ không phải của người chơi đang có lượt, không làm gì cả
       return;
     }
 
     if (selectedPiece) {
-      // Nếu đã chọn quân cờ và quân cờ mới cùng màu, chọn quân mới
       if (selectedPiece.color === piece.color) {
         setSelectedPiece(piece);
         const moves = calculateValidMoves(piece);
         setValidMoves(moves);
       } else {
-        // Nếu chọn quân cờ khác màu, không làm gì cả (có thể tùy chỉnh thêm)
         return;
       }
     } else {
-      // Nếu chưa có quân cờ nào được chọn, chọn quân cờ hiện tại
       setSelectedPiece(piece);
       const moves = calculateValidMoves(piece);
       setValidMoves(moves);
@@ -409,7 +416,6 @@ const Chessboard = () => {
     setTurn("red");
   };
 
-  // Hàm tìm vị trí của tướng
   const findGeneralPosition = (color) => {
     const generalPiece = pieces.find(
       (piece) =>
@@ -418,34 +424,10 @@ const Chessboard = () => {
     return generalPiece ? generalPiece.position : null;
   };
 
-  // Hàm kiểm tra xem tướng có bị chiếu hay không
-  const isGeneralInCheck = (color, updatedPieces) => {
-    const generalPosition = findGeneralPosition(color); // Tìm vị trí của tướng
-    if (!generalPosition) return false; // Không tìm thấy tướng thì không bị chiếu
-
-    // Tính toán tất cả các nước đi của quân đối thủ
-    const enemyColor = color === "red" ? "black" : "red";
-    for (const piece of updatedPieces) {
-      if (piece.color === enemyColor) {
-        const enemyMoves = calculateValidMoves(piece, updatedPieces); // Tính nước đi cho quân đối thủ
-        if (
-          enemyMoves.some(
-            (move) =>
-              move[0] === generalPosition[0] && move[1] === generalPosition[1]
-          )
-        ) {
-          return true; // Tướng bị chiếu nếu quân đối thủ có thể đi tới vị trí của tướng
-        }
-      }
-    }
-    return false;
-  };
-
-  // Hàm để hiển thị thông báo "Chiếu tướng"
   const showCheckMessageEffect = () => {
     setShowCheckMessage(true);
     setTimeout(() => {
-      setShowCheckMessage(false); // Ẩn chữ sau 4 giây
+      setShowCheckMessage(false);
     }, 4000);
   };
 
@@ -490,7 +472,7 @@ const Chessboard = () => {
                   style={{
                     gridRow: rowIndex + 1,
                     gridColumn: colIndex + 1,
-                    position: "relative", // Đảm bảo vị trí cho chấm sáng
+                    position: "relative",
                   }}
                   onClick={() => handleMovePiece([rowIndex, colIndex])} // Xử lý khi click vào ô trống
                 />
