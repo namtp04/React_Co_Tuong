@@ -2,7 +2,7 @@ import React, { useState, Fragment } from "react";
 import "./co-tuong.css";
 import { initialPieces } from "./quan-co";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const Chessboard = () => {
   const [pieces, setPieces] = useState(initialPieces);
@@ -238,120 +238,146 @@ const Chessboard = () => {
     return moves; // Trả về các nước đi hợp lệ
   };
 
-  // Hàm kiểm tra tất cả các nước đi hợp lệ của một bên để xem có cách thoát khỏi chiếu không
   const isCheckmate = (color, updatedPieces) => {
-    // 1. Find the general piece
-    const generalPiece = updatedPieces.find((piece) =>
-      piece.color === color && (piece.type === "将" || piece.type === "帅")
+    const generalPiece = updatedPieces.find(
+      (piece) =>
+        piece.color === color && (piece.type === "将" || piece.type === "帥")
     );
-  
-    // If no general is found, return true (indicating checkmate)
+
     if (!generalPiece) {
       console.error("General piece not found for color:", color);
-      return true; // Can return true for checkmate since there’s no general
+      return true; // This can return true for checkmate since there’s no general
     }
-  
+
     // 2. Check valid moves for the general
     const validMoves = calculateValidMoves(generalPiece, updatedPieces);
-  
+
     // If the general has valid moves, it is not checkmate
     if (validMoves.length > 0) {
-      return false;
+      return false; // Not checkmate
     }
-  
-    // 3. Check other pieces to see if they can block the check
+
+    // Kiểm tra các quân cờ khác xem có thể chặn chiếu không
     const enemyColor = color === "red" ? "black" : "red";
     for (const piece of updatedPieces) {
       if (piece.color === color) {
         const moves = calculateValidMoves(piece, updatedPieces);
         for (const move of moves) {
-          // Check if the piece can move to block the check
-          const newPieces = updatedPieces.map(p =>
+          // Kiểm tra xem quân có thể di chuyển để chặn chiếu không
+          const newPieces = updatedPieces.map((p) =>
             p === piece ? { ...p, position: move } : p
           );
           if (!isGeneralInCheck(color, newPieces)) {
-            return false; // There is a piece that can block the check
+            return false; // Có quân có thể chặn chiếu
           }
-  
-          // Check if the enemy piece can be captured
+
+          // Kiểm tra xem quân địch có thể bị bắt không
           const targetPiece = updatedPieces.find(
-            p => p.position[0] === move[0] && p.position[1] === move[1] && p.color === enemyColor
+            (p) =>
+              p.position[0] === move[0] &&
+              p.position[1] === move[1] &&
+              p.color === enemyColor
           );
           if (targetPiece) {
-            const newUpdatedPieces = updatedPieces.filter(p => p !== targetPiece);
+            const newUpdatedPieces = updatedPieces.filter(
+              (p) => p !== targetPiece
+            );
             if (!isGeneralInCheck(color, newUpdatedPieces)) {
-              return false; // Can capture an enemy piece and avoid check
+              return false; // Có thể bắt quân địch và tránh chiếu
             }
           }
         }
       }
     }
-  
-    return true; // No way to escape check
-  };
-  
 
-// Cập nhật hàm handleMovePiece
-const handleMovePiece = (newPosition) => {
-  if (
-    selectedPiece &&
-    validMoves.some(
-      (move) => move[0] === newPosition[0] && move[1] === newPosition[1]
-    )
-  ) {
-    let updatedPieces = [...pieces];
-
-    // Check for capturing the enemy piece
-    const targetPiece = pieces.find(
-      (piece) =>
-        piece.position[0] === newPosition[0] &&
-        piece.position[1] === newPosition[1]
-    );
-
-    if (targetPiece && targetPiece.color !== selectedPiece.color) {
-      updatedPieces = updatedPieces.filter((piece) => piece !== targetPiece);
-    }
-
-    // Move the selected piece
-    updatedPieces = updatedPieces.map((piece) =>
-      piece === selectedPiece ? { ...piece, position: newPosition } : piece
-    );
-
-    // Check if the move puts the player's general in check
-    if (isGeneralInCheck(selectedPiece.color, updatedPieces)) {
-      return; // Prevent the move if it puts the general in check
-    }
-
-    // Update the pieces on the board
-    setPieces(updatedPieces);
-    setSelectedPiece(null);
-    setValidMoves([]);
-
-    // After the move, check if the opponent's general is in check
-    const opponentColor = selectedPiece.color === "red" ? "black" : "red";
-    if (isGeneralInCheck(opponentColor, updatedPieces)) {
-      showCheckMessageEffect(); // Show check message
-
-      // Check for checkmate
-      if (isCheckmate(opponentColor, updatedPieces)) {
-        Swal.fire({
-          title: "Chiếu bí!",
-          text: (turn == 'red' ? 'Đỏ' : 'Đen') + ' thắng',
-          icon: "success"
-        });
-        setTurn(null);
-        setTimeout(handleReset, 20000);
-        return;
+    // Kiểm tra xem có quân địch nào có thể bị bắt không
+    for (const piece of updatedPieces) {
+      if (piece.color === enemyColor) {
+        const moves = calculateValidMoves(piece, updatedPieces);
+        for (const move of moves) {
+          // Kiểm tra xem có quân địch nào có thể bị bắt
+          const targetPiece = updatedPieces.find(
+            (p) =>
+              p.position[0] === move[0] &&
+              p.position[1] === move[1] &&
+              p.color === enemyColor
+          );
+          if (targetPiece) {
+            const newUpdatedPieces = updatedPieces.filter(
+              (p) => p !== targetPiece
+            );
+            if (!isGeneralInCheck(color, newUpdatedPieces)) {
+              return false; // Nếu có quân nào có thể bị bắt và không chiếu, không chiếu bí
+            }
+          }
+        }
       }
     }
 
-    // Switch turns
-    setTurn(turn === "red" ? "black" : "red");
-  } else {
-    setSelectedPiece(null);
-    setValidMoves([]);
-  }
-};
+    return true; // Không còn cách nào để thoát khỏi chiếu
+  };
+
+  // Cập nhật hàm handleMovePiece
+  const handleMovePiece = (newPosition) => {
+    if (
+      selectedPiece &&
+      validMoves.some(
+        (move) => move[0] === newPosition[0] && move[1] === newPosition[1]
+      )
+    ) {
+      let updatedPieces = [...pieces];
+
+      // Check for capturing the enemy piece
+      const targetPiece = pieces.find(
+        (piece) =>
+          piece.position[0] === newPosition[0] &&
+          piece.position[1] === newPosition[1]
+      );
+
+      if (targetPiece && targetPiece.color !== selectedPiece.color) {
+        updatedPieces = updatedPieces.filter((piece) => piece !== targetPiece);
+      }
+
+      // Move the selected piece
+      updatedPieces = updatedPieces.map((piece) =>
+        piece === selectedPiece ? { ...piece, position: newPosition } : piece
+      );
+
+      // Check if the move puts the player's general in check
+      if (isGeneralInCheck(selectedPiece.color, updatedPieces)) {
+        return; // Prevent the move if it puts the general in check
+      }
+
+      // Update the pieces on the board
+      setPieces(updatedPieces);
+      setSelectedPiece(null);
+      setValidMoves([]);
+
+      // After the move, check if the opponent's general is in check
+      const opponentColor = selectedPiece.color === "red" ? "black" : "red";
+      if (isGeneralInCheck(opponentColor, updatedPieces)) {
+        showCheckMessageEffect(); // Show check message
+
+        // Check for checkmate
+        if (isCheckmate(opponentColor, updatedPieces)) {
+          Swal.fire({
+            title: "Chiếu bí!",
+            text: (turn == "red" ? "Đỏ" : "Đen") + " thắng",
+            icon: "success",
+          });
+          setTurn(null);
+          setTimeout(handleReset, 20000);
+          return;
+        }
+      }
+
+      // Switch turns
+      setTurn(turn === "red" ? "black" : "red");
+    } else {
+      setSelectedPiece(null);
+      setValidMoves([]);
+    }
+  };
 
   // Xử lý khi chọn quân cờ
   const handleSelectPiece = (piece) => {
