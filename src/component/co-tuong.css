@@ -180,20 +180,20 @@ body {
 /* Thêm các lớp cho từng quân cờ */
 .piece.red {
   background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOyDIa0kEgsS7lJ5yxwY7uYO-aE0-VBM-4ug&s"); /* Hình ảnh quân đỏ */
-  background-size: cover; /* Đảm bảo hình ảnh phủ đầy */
+  background-size: cover;
 }
 
 .piece.black {
   background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOyDIa0kEgsS7lJ5yxwY7uYO-aE0-VBM-4ug&s"); /* Hình ảnh quân đen */
-  background-size: cover; /* Đảm bảo hình ảnh phủ đầy */
+  background-size: cover;
 }
 
 .red {
-  color: red; /* Màu quân đỏ */
+  color: red;
 }
 
 .black {
-  color: black; /* Màu quân đen */
+  color: black;
 }
 
 
