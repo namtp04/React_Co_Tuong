@@ -137,15 +137,15 @@ body {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     grid-template-rows: repeat(10, 1fr);
-    height: 500px; /* Độ cao của bàn cờ */
-    width: 450px; /* Độ rộng của bàn cờ */
+    height: 500px; 
+    width: 450px; 
     position: relative;
-    gap: 2px; /* Thêm khoảng cách giữa các ô */
+    gap: 2px; 
   }
 
 .piece {
-  width: 40px; /* Thay đổi kích thước quân cờ */
-  height: 40px; /* Thay đổi kích thước quân cờ */
+  width: 40px; 
+  height: 40px; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,8 +156,8 @@ body {
   font-size: 20px;
   color: black;
   cursor: pointer;
-  padding: 4px; /* Thêm padding để tạo khoảng cách */
-  margin: 2px; /* Thêm margin để giãn cách giữa các quân cờ */
+  padding: 4px; 
+  margin: 2px; 
 }
 
 .piece.selected {
@@ -171,10 +171,10 @@ body {
   border: 1px solid transparent;
 }
 
-/* Hiển thị các nước đi hợp lệ */
+
   .valid-move:hover {
     border: 2px solid #000;
-    border-radius: 5px; /* Tăng độ đậm màu viền khi hover */
+    border-radius: 5px; 
   }
 
 /* Thêm các lớp cho từng quân cờ */
