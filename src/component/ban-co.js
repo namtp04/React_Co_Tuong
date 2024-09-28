@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import "./co-tuong.css";
 import { initialPieces } from "./quan-co";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -10,6 +10,10 @@ const Chessboard = () => {
   const [validMoves, setValidMoves] = useState([]);
   const [turn, setTurn] = useState("red");
   const [showCheckMessage, setShowCheckMessage] = useState(false);
+  const [checkCounter, setCheckCounter] = useState(0);
+  const [lastCheckingPiece, setLastCheckingPiece] = useState(null);
+  const [turnFirst, setTurnFirst] = useState(null);
+  const [previousPosition, setPreviousPosition] = useState(null);
 
   const calculateValidMoves = (piece, currentPieces = pieces) => {
     const [row, col] = piece.position;
@@ -274,8 +278,29 @@ const Chessboard = () => {
     return false;
   };
 
-  // Cập nhật hàm handleMovePiece
+  const handleSelectPiece = (piece) => {
+    if (piece.color !== turn) {
+      return;
+    }
+
+    if (selectedPiece) {
+      if (selectedPiece.color === piece.color) {
+        
+        setSelectedPiece(piece);
+        const moves = calculateValidMoves(piece);
+        setValidMoves(moves);
+      } else {
+        return;
+      }
+    } else {
+      setSelectedPiece(piece);
+      const moves = calculateValidMoves(piece);
+      setValidMoves(moves);
+    }
+  };
+
   const handleMovePiece = (newPosition) => {
+      
     if (
       selectedPiece &&
       validMoves.some(
@@ -283,6 +308,7 @@ const Chessboard = () => {
       )
     ) {
       let updatedPieces = [...pieces];
+      
 
       // Kiểm tra bắt quân địch
       const targetPiece = pieces.find(
@@ -294,6 +320,8 @@ const Chessboard = () => {
       if (targetPiece && targetPiece.color !== selectedPiece.color) {
         updatedPieces = updatedPieces.filter((piece) => piece !== targetPiece);
       }
+      
+      const oldPosition = selectedPiece.position;
 
       // Di chuyển quân cờ đã chọn
       updatedPieces = updatedPieces.map((piece) =>
@@ -307,9 +335,10 @@ const Chessboard = () => {
 
       // Cập nhật quân cờ trên bàn cờ
       setPieces(updatedPieces);
-      setSelectedPiece(null);
+      setPreviousPosition(oldPosition);
       setValidMoves([]);
       console.log(selectedPiece);
+      setSelectedPiece(null);
 
       // Sau khi di chuyển, kiểm tra xem tướng của đối thủ có bị chiếu không
       const opponentColor = selectedPiece.color === "red" ? "black" : "red";
@@ -321,7 +350,30 @@ const Chessboard = () => {
             icon: "success",
           });
           setTurn(null);
-          setTimeout(handleReset, 20000);
+          setTimeout(handleReset, 5000);
+          return;
+        }
+
+        // Cập nhật số lần chiếu tướng
+        if (selectedPiece === lastCheckingPiece) {
+          setCheckCounter((prevCount) => prevCount + 1);
+          console.log(checkCounter);
+        } else {
+          setCheckCounter(1);
+          setLastCheckingPiece(selectedPiece);
+        }
+
+        // Nếu chiếu tướng liên tục 5 lần, xử thua
+        if (checkCounter >= 5) {
+          Swal.fire({
+            title: "Thua cuộc!",
+            text: `${
+              turn === "red" ? "Đỏ" : "Đen"
+            } bị xử thua do lặp chiếu tướng quá nhiều lần.`,
+            icon: "error",
+          });
+          setTurn(null);
+          setTimeout(handleReset, 5000);
           return;
         }
 
@@ -391,29 +443,11 @@ const Chessboard = () => {
     return true;
   };
 
-  const handleSelectPiece = (piece) => {
-    if (piece.color !== turn) {
-      return;
-    }
-
-    if (selectedPiece) {
-      if (selectedPiece.color === piece.color) {
-        setSelectedPiece(piece);
-        const moves = calculateValidMoves(piece);
-        setValidMoves(moves);
-      } else {
-        return;
-      }
-    } else {
-      setSelectedPiece(piece);
-      const moves = calculateValidMoves(piece);
-      setValidMoves(moves);
-    }
-  };
-
   const handleReset = () => {
     setPieces(initialPieces);
-    setTurn("red");
+    setTurn(turn === "red" ? "black" : "red");
+    setCheckCounter(0);
+    setLastCheckingPiece(null);
   };
 
   const findGeneralPosition = (color) => {
@@ -428,14 +462,36 @@ const Chessboard = () => {
     setShowCheckMessage(true);
     setTimeout(() => {
       setShowCheckMessage(false);
-    }, 4000);
+    }, 2000);
   };
+
+  useEffect(() => {
+    setTurnFirst(true);
+    if(selectedPiece){
+      setPreviousPosition(selectedPiece.position);
+    }
+    setTimeout(() => {
+      setTurnFirst(false);
+    }, 2000);
+  }, [turn,previousPosition]);
 
   return (
     <Fragment>
       <div className="container">
         {/* Hiển thị chữ "Chiếu tướng" */}
-        {showCheckMessage && <div className="chieu-tuong">Chiếu tướng</div>}
+        {showCheckMessage ? (
+        <div className="chieu-tuong">Chiếu tướng</div>
+      ) : (
+        // Hiển thị lượt chơi nếu không phải chiếu tướng
+        turnFirst && (
+          <div
+            className="turn-first"
+            style={{ color: turn === "red" ? "red" : "black" }}
+          >
+            Đến lượt {turn === "red" ? "đỏ" : "đen"}
+          </div>
+        )
+      )}
 
         <div className="g-grid"> 楚河 汉界</div>
         <div className="board" style={{ marginTop: "-471px" }}>
@@ -459,24 +515,30 @@ const Chessboard = () => {
           {/* Chỉ hiển thị các ô trống khi có quân cờ được chọn */}
           {selectedPiece &&
             Array.from({ length: 10 }).map((_, rowIndex) =>
-              Array.from({ length: 9 }).map((_, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`empty-cell ${
-                    validMoves.some(
-                      (move) => move[0] === rowIndex && move[1] === colIndex
-                    )
-                      ? "valid-move"
-                      : ""
-                  }`} // Kiểm tra xem ô có phải là nước đi hợp lệ không
-                  style={{
-                    gridRow: rowIndex + 1,
-                    gridColumn: colIndex + 1,
-                    position: "relative",
-                  }}
-                  onClick={() => handleMovePiece([rowIndex, colIndex])} // Xử lý khi click vào ô trống
-                />
-              ))
+              Array.from({ length: 9 }).map((_, colIndex) => {
+                const isPreviousPosition =
+                  previousPosition &&
+                  previousPosition[0] === rowIndex &&
+                  previousPosition[1] === colIndex;
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={`empty-cell ${
+                      validMoves.some(
+                        (move) => move[0] === rowIndex && move[1] === colIndex
+                      )
+                        ? "valid-move"
+                        : ""
+                    } ${isPreviousPosition ? "previous-position" : ""}`} // Kiểm tra xem ô có phải là nước đi hợp lệ không
+                    style={{
+                      gridRow: rowIndex + 1,
+                      gridColumn: colIndex + 1,
+                      position: "relative",
+                    }}
+                    onClick={() => handleMovePiece([rowIndex, colIndex])} // Xử lý khi click vào ô trống
+                  />
+                );
+              })
             )}
         </div>
         <div className="text-center">

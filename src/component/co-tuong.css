@@ -153,11 +153,12 @@ body {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s;
-  font-size: 20px;
+  font-size: 21px;
   color: black;
   cursor: pointer;
   padding: 4px; 
   margin: 2px; 
+  font-weight: 600;
 }
 
 .piece.selected {
@@ -214,7 +215,22 @@ body {
   text-align: center; /* Căn giữa chữ */
   font-family: 'ZCOOL KuaiLe', sans-serif; /* Font chữ Trung Hoa */
   white-space: nowrap; /* Ngăn ngừa xuống dòng */
-  animation: slideInOut 6s forwards; /* Thời gian tổng cho hiệu ứng */
+  animation: slideInOut 2s forwards; /* Thời gian tổng cho hiệu ứng */
+  width: 100%;
+  z-index: 100; /* Đảm bảo chữ nằm trên các phần tử khác */
+}
+
+
+.turn-first {
+  position: absolute;
+  top: 40%; /* Điều chỉnh vị trí theo nhu cầu */
+  left: 0; /* Bắt đầu từ bên trái */
+  font-size: 48px; /* Kích thước chữ */
+  font-weight: 900;
+  text-align: center; /* Căn giữa chữ */
+  font-family: 'ZCOOL KuaiLe', sans-serif; /* Font chữ Trung Hoa */
+  white-space: nowrap; /* Ngăn ngừa xuống dòng */
+  animation: slideInOut 2s forwards; /* Thời gian tổng cho hiệu ứng */
   width: 100%;
   z-index: 100; /* Đảm bảo chữ nằm trên các phần tử khác */
 }
@@ -233,6 +249,14 @@ body {
     transform: translateX(100%); /* Chạy ra ngoài bên phải */
   }
   100% {
-    transform: translateX(100%); /* Hoàn thành ra ngoài bên phải */
+    transform: translateX(200%); /* Hoàn thành ra ngoài bên phải */
   }
 }
+
+.previous-position {
+  border: 1px solid black;
+  background-color: rgba(182, 178, 178, 0.5);
+  position: relative;
+  border-radius: 5px;
+}
+
