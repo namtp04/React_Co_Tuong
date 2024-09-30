@@ -206,7 +206,7 @@ body {
 
 
 .chieu-tuong {
-  position: absolute;
+  position: fixed;
   top: 40%; /* Điều chỉnh vị trí theo nhu cầu */
   left: 0; /* Bắt đầu từ bên trái */
   font-size: 48px; /* Kích thước chữ */
@@ -222,7 +222,7 @@ body {
 
 
 .turn-first {
-  position: absolute;
+  position: fixed;
   top: 40%; /* Điều chỉnh vị trí theo nhu cầu */
   left: 0; /* Bắt đầu từ bên trái */
   font-size: 48px; /* Kích thước chữ */
@@ -239,22 +239,15 @@ body {
   0% {
     transform: translateX(-100%); /* Bắt đầu từ ngoài màn hình bên trái */
   }
-  25% {
-    transform: translateX(0); /* Chạy vào giữa màn hình */
-  }
   50% {
     transform: translateX(0); /* Dừng lại ở giữa */
   }
-  75% {
-    transform: translateX(100%); /* Chạy ra ngoài bên phải */
-  }
   100% {
-    transform: translateX(200%); /* Hoàn thành ra ngoài bên phải */
+    transform: translateX(100%); /* Hoàn thành ra ngoài bên phải */
   }
 }
 
 .previous-position {
-  border: 1px solid black;
   background-color: rgba(182, 178, 178, 0.5);
   position: relative;
   border-radius: 5px;

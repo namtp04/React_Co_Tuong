@@ -285,7 +285,6 @@ const Chessboard = () => {
 
     if (selectedPiece) {
       if (selectedPiece.color === piece.color) {
-        
         setSelectedPiece(piece);
         const moves = calculateValidMoves(piece);
         setValidMoves(moves);
@@ -320,8 +319,6 @@ const Chessboard = () => {
       if (targetPiece && targetPiece.color !== selectedPiece.color) {
         updatedPieces = updatedPieces.filter((piece) => piece !== targetPiece);
       }
-      
-      const oldPosition = selectedPiece.position;
 
       // Di chuyển quân cờ đã chọn
       updatedPieces = updatedPieces.map((piece) =>
@@ -335,7 +332,6 @@ const Chessboard = () => {
 
       // Cập nhật quân cờ trên bàn cờ
       setPieces(updatedPieces);
-      setPreviousPosition(oldPosition);
       setValidMoves([]);
       console.log(selectedPiece);
       setSelectedPiece(null);
@@ -467,13 +463,10 @@ const Chessboard = () => {
 
   useEffect(() => {
     setTurnFirst(true);
-    if(selectedPiece){
-      setPreviousPosition(selectedPiece.position);
-    }
     setTimeout(() => {
       setTurnFirst(false);
     }, 2000);
-  }, [turn,previousPosition]);
+  }, [turn]);
 
   return (
     <Fragment>
