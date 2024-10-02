@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Chessboard from './component/ban-co';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
