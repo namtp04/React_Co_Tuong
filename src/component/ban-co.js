@@ -15,6 +15,37 @@ const Chessboard = () => {
   const [turnFirst, setTurnFirst] = useState(null);
   const [previousPosition, setPreviousPosition] = useState(null);
 
+  const isOccupied = (position, currentPieces) => {
+    // Check if a position is occupied by iterating through currentPieces
+    return currentPieces.some(
+      (piece) =>
+        piece.position[0] === position[0] && piece.position[1] === position[1]
+    );
+  };
+
+  const isPathClearBetweenGenerals = (general1, general2, currentPieces) => {
+    const [row1, col1] = general1.position;
+    const [row2, col2] = general2.position;
+
+    // Kiểm tra xem hai tướng có nằm trên cùng một cột hay không
+    if (col1 === col2) {
+        const [minRow, maxRow] = [Math.min(row1, row2), Math.max(row1, row2)];
+        
+        // Kiểm tra có quân cờ nào trong đường đi giữa hai tướng hay không
+        for (let row = minRow + 1; row < maxRow; row++) {
+            if (isOccupied([row, col1], currentPieces)) {
+              console.log(`Vị trí [${row}, ${col1}] bị chiếm!`);
+                return false; // Đường đi bị chặn bởi một quân cờ
+            }
+        }
+
+        return true; // Đường đi rõ ràng, không có quân nào giữa hai tướng
+      }
+      return false;
+};
+
+
+
   const calculateValidMoves = (piece, currentPieces = pieces) => {
     const [row, col] = piece.position;
     const moves = [];
@@ -299,7 +330,6 @@ const Chessboard = () => {
   };
 
   const handleMovePiece = (newPosition) => {
-      
     if (
       selectedPiece &&
       validMoves.some(
@@ -307,7 +337,6 @@ const Chessboard = () => {
       )
     ) {
       let updatedPieces = [...pieces];
-      
 
       // Kiểm tra bắt quân địch
       const targetPiece = pieces.find(
@@ -324,6 +353,30 @@ const Chessboard = () => {
       updatedPieces = updatedPieces.map((piece) =>
         piece === selectedPiece ? { ...piece, position: newPosition } : piece
       );
+
+      const opponentColors = selectedPiece.color === "red" ? "black" : "red";
+      const opponentGeneral = updatedPieces.find(
+        (piece) =>
+          piece.color === opponentColors &&
+          (piece.type === "将" || piece.type === "帥")
+      );
+
+      // Kiểm tra quân tướng có bị đối mặt hay không
+      if (
+        opponentGeneral &&
+        isPathClearBetweenGenerals(
+          selectedPiece,
+          opponentGeneral,
+          updatedPieces
+        )
+      ) {
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Hai quân tướng không được đối mặt nhau.",
+          icon: "warning",
+        });
+        return; // Dừng lại nếu có lỗi
+      }
 
       // Kiểm tra xem nước đi có làm cho tướng của người chơi bị chiếu không
       if (isGeneralInCheck(selectedPiece.color, updatedPieces)) {
@@ -473,18 +526,18 @@ const Chessboard = () => {
       <div className="container">
         {/* Hiển thị chữ "Chiếu tướng" */}
         {showCheckMessage ? (
-        <div className="chieu-tuong">Chiếu tướng</div>
-      ) : (
-        // Hiển thị lượt chơi nếu không phải chiếu tướng
-        turnFirst && (
-          <div
-            className="turn-first"
-            style={{ color: turn === "red" ? "red" : "black" }}
-          >
-            Đến lượt {turn === "red" ? "đỏ" : "đen"}
-          </div>
-        )
-      )}
+          <div className="chieu-tuong">Chiếu tướng</div>
+        ) : (
+          // Hiển thị lượt chơi nếu không phải chiếu tướng
+          turnFirst && (
+            <div
+              className="turn-first"
+              style={{ color: turn === "red" ? "red" : "black" }}
+            >
+              Đến lượt {turn === "red" ? "đỏ" : "đen"}
+            </div>
+          )
+        )}
 
         <div className="g-grid"> 楚河 汉界</div>
         <div className="board" style={{ marginTop: "-471px" }}>
