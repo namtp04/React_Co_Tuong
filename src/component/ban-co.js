@@ -13,7 +13,7 @@ const Chessboard = () => {
   const [checkCounter, setCheckCounter] = useState(0);
   const [lastCheckingPiece, setLastCheckingPiece] = useState(null);
   const [turnFirst, setTurnFirst] = useState(null);
-  const [previousPosition, setPreviousPosition] = useState(null);
+  // const [previousPosition, setPreviousPosition] = useState();
 
   const isOccupied = (position, currentPieces) => {
     // Check if a position is occupied by iterating through currentPieces
@@ -499,13 +499,13 @@ const Chessboard = () => {
     setLastCheckingPiece(null);
   };
 
-  const findGeneralPosition = (color) => {
-    const generalPiece = pieces.find(
-      (piece) =>
-        (piece.type === "帥" || piece.type === "将") && piece.color === color
-    );
-    return generalPiece ? generalPiece.position : null;
-  };
+  // const findGeneralPosition = (color) => {
+  //   const generalPiece = pieces.find(
+  //     (piece) =>
+  //       (piece.type === "帥" || piece.type === "将") && piece.color === color
+  //   );
+  //   return generalPiece ? generalPiece.position : null;
+  // };
 
   const showCheckMessageEffect = () => {
     setShowCheckMessage(true);
@@ -562,10 +562,7 @@ const Chessboard = () => {
           {selectedPiece &&
             Array.from({ length: 10 }).map((_, rowIndex) =>
               Array.from({ length: 9 }).map((_, colIndex) => {
-                const isPreviousPosition =
-                  previousPosition &&
-                  previousPosition[0] === rowIndex &&
-                  previousPosition[1] === colIndex;
+                
                 return (
                   <div
                     key={`${rowIndex}-${colIndex}`}
@@ -575,7 +572,7 @@ const Chessboard = () => {
                       )
                         ? "valid-move"
                         : ""
-                    } ${isPreviousPosition ? "previous-position" : ""}`} // Kiểm tra xem ô có phải là nước đi hợp lệ không
+                    }`} // Kiểm tra xem ô có phải là nước đi hợp lệ không
                     style={{
                       gridRow: rowIndex + 1,
                       gridColumn: colIndex + 1,
