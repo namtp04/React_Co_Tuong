@@ -539,7 +539,7 @@ const Chessboard = () => {
           )
         )}
 
-        <div className="g-grid"> 楚河 汉界</div>
+        <div className="g-grid"> 楚河       汉界</div>
         <div className="board" style={{ marginTop: "-471px" }}>
           {/* Hiển thị quân cờ */}
           {pieces.map((piece, index) => (
