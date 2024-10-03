@@ -172,6 +172,11 @@ body {
   border: 1px solid transparent;
 }
 
+.valid-move{
+  background-color: darkgrey;
+  opacity: 0.3;
+  border-radius: 5px; 
+}
 
   .valid-move:hover {
     border: 2px solid #000;
